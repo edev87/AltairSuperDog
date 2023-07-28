@@ -1,88 +1,164 @@
-const getValues = () => {
-  let fizzVal = document.getElementById('fizz-value').value;
-  let buzzVal = document.getElementById('buzz-value').value;
-  let stopVal = document.getElementById('stop-value').value;
+const events = [
+  {
+    event: "ComicCon",
+    city: "New York",
+    state: "New York",
+    attendance: 240000,
+    date: "06/01/2017",
+  },
+  {
+    event: "ComicCon",
+    city: "New York",
+    state: "New York",
+    attendance: 250000,
+    date: "06/01/2018",
+  },
+  {
+    event: "ComicCon",
+    city: "New York",
+    state: "New York",
+    attendance: 257000,
+    date: "06/01/2019",
+  },
+  {
+    event: "ComicCon",
+    city: "San Diego",
+    state: "California",
+    attendance: 130000,
+    date: "06/01/2017",
+  },
+  {
+    event: "ComicCon",
+    city: "San Diego",
+    state: "California",
+    attendance: 140000,
+    date: "06/01/2018",
+  },
+  {
+    event: "ComicCon",
+    city: "San Diego",
+    state: "California",
+    attendance: 150000,
+    date: "06/01/2019",
+  },
+  {
+    event: "HeroesCon",
+    city: "Charlotte",
+    state: "North Carolina",
+    attendance: 40000,
+    date: "06/01/2017",
+  },
+  {
+    event: "HeroesCon",
+    city: "Charlotte",
+    state: "North Carolina",
+    attendance: 45000,
+    date: "06/01/2018",
+  },
+  {
+    event: "HeroesCon",
+    city: "Charlotte",
+    state: "North Carolina",
+    attendance: 50000,
+    date: "06/01/2019",
+  },
+];
 
-  let convertFizzValToNum = Number(fizzVal);
-  let convertBuzzValToNum = Number(buzzVal);
-  let convertStopValToNum = Number(stopVal);
+const getEvents = () => {
+  return events;
+}
 
-  if (convertFizzValToNum != 3 || convertBuzzValToNum != 5 ||
-    isNaN(convertFizzValToNum) || isNaN(convertBuzzValToNum)) {
+const buildDropdown = () => {
 
-    Swal.fire({
-      title: 'Oops!',
-      text: 'Fizz can only be 3. Buzz can only be 5. Try your inputs again.',
-      icon: 'error',
-      backdrop: false
-    });
-  }
-  else if (convertStopValToNum > 5000) {
-    Swal.fire({
-      title: 'Oops!',
-      text: 'The stop value cannot be greater than 5000',
-      icon: 'error',
-      backdrop: false
-    });
-  }
+  // get current events
+  let currentEvents = getEvents();
 
-  let passFizzBuzzCollection = generateFizzBuzz(convertFizzValToNum, convertBuzzValToNum, convertStopValToNum);
+  // get a list of unique cities
+  let eventCities = currentEvents.map(e => e.city);
+  let distinctCities = new Set(eventCities);  //eliminates duplicates and then returns the unique items
+  let dropdownChoices = ['All', ...distinctCities];
 
-  displayFizzBuzz(passFizzBuzzCollection, convertStopValToNum);
+  const dropdownDiv = document.getElementById('city-dropdown');
+  const dropdownItemTemplate = document.getElementById("dropdown-template");
 
+  // with each unique city:
+  dropdownChoices.forEach(choice => {
+
+    // -  copy the dropdown template
+    let dropdownItemCopy = dropdownItemTemplate.content.cloneNode(true);
+
+    // - change that copies text
+    let aTag = dropdownItemCopy.querySelector('a');
+    aTag.innerText = choice;
+
+    // - put in the dropdown
+    dropdownDiv.appendChild(dropdownItemCopy);
+
+  })
+  displayEvents(currentEvents);
+  displayStats(currentEvents);
 
 }
 
-const generateFizzBuzz = (convertFizzValToNum, convertBuzzValToNum, convertStopValToNum) => {
-  let fizzBuzzNumbers = [];
- 
-  for (let i = 1; i <= convertStopValToNum; i++) {
+const displayEvents = (events) => {
 
-    if (i % 3 === 0 && i % 5 === 0) {
-      fizzBuzzNumbers.push("FizzBuzz")
-    } else if (i % 5 === 0) {
-      fizzBuzzNumbers.push("Buzz")
-    }
-    else if (i % 3 === 0) {
-      fizzBuzzNumbers.push("Fizz")
-    }
-    else {
-      fizzBuzzNumbers.push(i)
-    }
+  //find the table
+  const eventsTable = document.getElementById('events-table');
+  //find the table row template
+  const eventTemplate = document.getElementById('table-row-template');
+
+  //clear out the table
+  eventsTable.innerHTML = '';
+
+  //for each event:
+
+  for (let i = 0; i < events.length; i++) {
+    // -- get one event
+    let event = events[i];
+
+    // -- clone the template
+    let tableRow = eventTemplate.content.cloneNode(true);
+
+    // -- get each property of en event 
+    // -- insert each property ino the cloned template
+    let eventNameCell = tableRow.querySelector('[data-id="event"]');
+    eventNameCell.innerText = event.event;
+    tableRow.querySelector('[data-id="city"]').innerText = event.city;
+    tableRow.querySelector('[data-id="state"]').innerText = event.state;
+    tableRow.querySelector('[data-id="attendance"]').innerText = event.attendance;
+    tableRow.querySelector('[data-id="date"]').innerText = event.date;
+
+    // Object.keys(event).forEach(key => {
+
+    // })
+
+    // -- insert the event data into the table
+    eventsTable.appendChild(tableRow);
   }
-
-  return fizzBuzzNumbers;
-
 }
 
-const displayFizzBuzz = (passFizzBuzzCollection) => {
-  let tableHtml = '';
+const displayStats = (events) => {
 
-  for (let i = 0; i < passFizzBuzzCollection.length; i++) {
-    let currentNumber = passFizzBuzzCollection[i];
-    let className = '';
-    if (currentNumber === "Fizz") {
-      className = "fizz text-light";
-    }
-    else if (currentNumber === "Buzz") {
-      className = "buzz text-light";
-    }
-    else if (currentNumber === "FizzBuzz") {
-      className = "fizzbuzz text-light";
-    }
-    else {
-      className = ""
-    }
+  let total = 0;
+let max = 0;
+let min = events[0].attendance;
+  for (let i = 0; i < events.length; i++) {
+    let event = events[i];
+    total += event.attendance;
 
-    let tableRowHtml = `<tr><td class="${className}"> ${currentNumber} </td></tr>`
-   
-    tableHtml += tableRowHtml;
+    if(event.attendance > max){
+      max = event.attendance;
+    } else if(event.attendance < min){
+      min = event.attendance;
+    }
+    
   }
 
-  document.getElementById("results").innerHTML = tableHtml
+  let avg = total/events.length;
 
-}
+  document.getElementById('total-attendance').innerHTML = total.toLocaleString();
+  document.getElementById('avg-attendance').innerHTML = Math.round(avg).toLocaleString();
+  document.getElementById('max-attended').innerHTML = max.toLocaleString();
+  document.getElementById('min-attended').innerHTML = min.toLocaleString();
 
-const clearDisplay = () => {
-  document.getElementById("results").innerHTML = " ";
 }
