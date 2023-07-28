@@ -151,7 +151,7 @@ let min = events[0].attendance;
     } else if(event.attendance < min){
       min = event.attendance;
     }
-    
+
   }
 
   let avg = total/events.length;
