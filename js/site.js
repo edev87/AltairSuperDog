@@ -65,7 +65,13 @@ const events = [
 ];
 
 const getEvents = () => {
-  return events;
+  let storedEvents = JSON.parse(localStorage.getItem('ed-events') || '[]');
+
+  if (storedEvents.length == 0) {
+    storedEvents = events;
+    localStorage.setItem('ed-events', JSON.stringify(events));
+  }
+  return storedEvents;
 }
 
 const buildDropdown = () => {
@@ -81,6 +87,8 @@ const buildDropdown = () => {
   const dropdownDiv = document.getElementById('city-dropdown');
   const dropdownItemTemplate = document.getElementById("dropdown-template");
 
+  dropdownDiv.innerHTML = '';
+
   // with each unique city:
   dropdownChoices.forEach(choice => {
 
@@ -95,6 +103,7 @@ const buildDropdown = () => {
     dropdownDiv.appendChild(dropdownItemCopy);
 
   })
+  document.getElementById('stats-loc').textContent = 'All';
   displayEvents(currentEvents);
   displayStats(currentEvents);
 
@@ -125,8 +134,8 @@ const displayEvents = (events) => {
     eventNameCell.innerText = event.event;
     tableRow.querySelector('[data-id="city"]').innerText = event.city;
     tableRow.querySelector('[data-id="state"]').innerText = event.state;
-    tableRow.querySelector('[data-id="attendance"]').innerText = event.attendance;
-    tableRow.querySelector('[data-id="date"]').innerText = event.date;
+    tableRow.querySelector('[data-id="attendance"]').innerText = event.attendance.toLocaleString();
+    tableRow.querySelector('[data-id="date"]').innerText = new Date(event.date).toLocaleDateString();
 
     // Object.keys(event).forEach(key => {
 
@@ -140,21 +149,21 @@ const displayEvents = (events) => {
 const displayStats = (events) => {
 
   let total = 0;
-let max = 0;
-let min = events[0].attendance;
+  let max = 0;
+  let min = events[0].attendance;
   for (let i = 0; i < events.length; i++) {
     let event = events[i];
     total += event.attendance;
 
-    if(event.attendance > max){
+    if (event.attendance > max) {
       max = event.attendance;
-    } else if(event.attendance < min){
+    } else if (event.attendance < min) {
       min = event.attendance;
     }
 
   }
 
-  let avg = total/events.length;
+  let avg = total / events.length;
 
   document.getElementById('total-attendance').innerHTML = total.toLocaleString();
   document.getElementById('avg-attendance').innerHTML = Math.round(avg).toLocaleString();
@@ -162,3 +171,74 @@ let min = events[0].attendance;
   document.getElementById('min-attended').innerHTML = min.toLocaleString();
 
 }
+
+const filterEvents = (dropdownItemClicked) => {
+  let cityName = dropdownItemClicked.innerText;
+  document.getElementById('stats-loc').textContent = cityName;
+  let allEvents = getEvents();
+
+  let filteredEvents = [];
+  if (cityName == 'All') {
+    filterEvents = allEvents
+  }
+  else {
+    // you can use .filter() for a shorter version of the for loop below
+    // for (let i = 0; i < allEvents.length; i++) {
+    //   let event = allEvents[i];
+    //   if (event.city == cityName) {
+    //     filteredEvents.push(event);
+    //   }
+    // }
+    /**
+     *  Use this to eliminate the if/else
+     * filteredEvents = allEvents.filter(event => cityName == 'All' || event.city == cityName);
+     *
+     * 
+     * **/
+
+    filteredEvents = allEvents.filter(event => event.city == cityName);
+
+  }
+
+  displayStats(filteredEvents);  //overall stats
+  displayEvents(filteredEvents);  //table
+
+}
+
+const saveEvent = () => {
+  let eventName = document.getElementById('event-name').value;
+  let city = document.getElementById('city').value;
+  let stateSelect = document.getElementById('state');
+  let selectedIndex = stateSelect.selectedIndex;
+  let selectedOption = stateSelect.options[selectedIndex];
+  let state = selectedOption.text;
+  let attendance = parseInt(document.getElementById('attendance').value);
+
+  let dateString = document.getElementById('date').value;
+  dateString = `${dateString} 00:00`;
+  let eventDate = new Date(dateString).toLocaleDateString();
+
+  let newEvent = {
+    event: eventName,
+    city: city,     //Can also just put city and that will fill the city field
+    state: state,
+    attendance: attendance,
+    date: eventDate,
+  };
+
+  let allEvents = getEvents();
+
+  allEvents.push(newEvent);
+
+  localStorage.setItem('ed-events', JSON.stringify(allEvents));
+
+  document.getElementById('newEventForm').reset();
+
+  buildDropdown();
+
+  // let modal = document.getElementById('newEventModal');
+  // modal.classList.add('fade');
+  // modal.style.display = 'none';
+
+}
+
