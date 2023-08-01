@@ -182,19 +182,6 @@ const filterEvents = (dropdownItemClicked) => {
     filterEvents = allEvents
   }
   else {
-    // you can use .filter() for a shorter version of the for loop below
-    // for (let i = 0; i < allEvents.length; i++) {
-    //   let event = allEvents[i];
-    //   if (event.city == cityName) {
-    //     filteredEvents.push(event);
-    //   }
-    // }
-    /**
-     *  Use this to eliminate the if/else
-     * filteredEvents = allEvents.filter(event => cityName == 'All' || event.city == cityName);
-     *
-     * 
-     * **/
 
     filteredEvents = allEvents.filter(event => event.city == cityName);
 
@@ -220,7 +207,7 @@ const saveEvent = () => {
 
   let newEvent = {
     event: eventName,
-    city: city,     //Can also just put city and that will fill the city field
+    city: city,     
     state: state,
     attendance: attendance,
     date: eventDate,
@@ -236,9 +223,9 @@ const saveEvent = () => {
 
   buildDropdown();
 
-  // let modal = document.getElementById('newEventModal');
-  // modal.classList.add('fade');
-  // modal.style.display = 'none';
+  let modal = bootstrap.Modal.getInstance(document.getElementById('newEventModal'));
+  modal.hide();
+
 
 }
 

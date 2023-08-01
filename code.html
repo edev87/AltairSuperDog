@@ -69,31 +69,333 @@
       <div class="col-12 col-lg-8">
         <pre class="line-numbers">
           <code class="language-js">
-            function displayMessage(){
-              let inputBox = document.getElementById("message");
-              let message = inputBox.value
-            
-              Swal.fire(
-                {
-              backdrop: false,
-              title: 'SuperDog Events',
-              text: message
-                }
-                );
-            
+            const events = [
+            {
+              event: "ComicCon",
+              city: "New York",
+              state: "New York",
+              attendance: 240000,
+              date: "06/01/2017",
+            },
+            {
+              event: "ComicCon",
+              city: "New York",
+              state: "New York",
+              attendance: 250000,
+              date: "06/01/2018",
+            },
+            {
+              event: "ComicCon",
+              city: "New York",
+              state: "New York",
+              attendance: 257000,
+              date: "06/01/2019",
+            },
+            {
+              event: "ComicCon",
+              city: "San Diego",
+              state: "California",
+              attendance: 130000,
+              date: "06/01/2017",
+            },
+            {
+              event: "ComicCon",
+              city: "San Diego",
+              state: "California",
+              attendance: 140000,
+              date: "06/01/2018",
+            },
+            {
+              event: "ComicCon",
+              city: "San Diego",
+              state: "California",
+              attendance: 150000,
+              date: "06/01/2019",
+            },
+            {
+              event: "HeroesCon",
+              city: "Charlotte",
+              state: "North Carolina",
+              attendance: 40000,
+              date: "06/01/2017",
+            },
+            {
+              event: "HeroesCon",
+              city: "Charlotte",
+              state: "North Carolina",
+              attendance: 45000,
+              date: "06/01/2018",
+            },
+            {
+              event: "HeroesCon",
+              city: "Charlotte",
+              state: "North Carolina",
+              attendance: 50000,
+              date: "06/01/2019",
+            },
+          ];
+          
+          const getEvents = () => {
+            let storedEvents = JSON.parse(localStorage.getItem('ed-events') || '[]');
+          
+            if (storedEvents.length == 0) {
+              storedEvents = events;
+              localStorage.setItem('ed-events', JSON.stringify(events));
             }
+            return storedEvents;
+          }
+          
+          const buildDropdown = () => {
+          
+            // get current events
+            let currentEvents = getEvents();
+          
+            // get a list of unique cities
+            let eventCities = currentEvents.map(e => e.city);
+            let distinctCities = new Set(eventCities);  //eliminates duplicates and then returns the unique items
+            let dropdownChoices = ['All', ...distinctCities];
+          
+            const dropdownDiv = document.getElementById('city-dropdown');
+            const dropdownItemTemplate = document.getElementById("dropdown-template");
+          
+            dropdownDiv.innerHTML = '';
+          
+            // with each unique city:
+            dropdownChoices.forEach(choice => {
+          
+              // -  copy the dropdown template
+              let dropdownItemCopy = dropdownItemTemplate.content.cloneNode(true);
+          
+              // - change that copies text
+              let aTag = dropdownItemCopy.querySelector('a');
+              aTag.innerText = choice;
+          
+              // - put in the dropdown
+              dropdownDiv.appendChild(dropdownItemCopy);
+          
+            })
+            document.getElementById('stats-loc').textContent = 'All';
+            displayEvents(currentEvents);
+            displayStats(currentEvents);
+          
+          }
+          
+          const displayEvents = (events) => {
+          
+            //find the table
+            const eventsTable = document.getElementById('events-table');
+            //find the table row template
+            const eventTemplate = document.getElementById('table-row-template');
+          
+            //clear out the table
+            eventsTable.innerHTML = '';
+          
+            //for each event:
+          
+            for (let i = 0; i < events.length; i++) {
+              // -- get one event
+              let event = events[i];
+          
+              // -- clone the template
+              let tableRow = eventTemplate.content.cloneNode(true);
+          
+              // -- get each property of en event 
+              // -- insert each property ino the cloned template
+              let eventNameCell = tableRow.querySelector('[data-id="event"]');
+              eventNameCell.innerText = event.event;
+              tableRow.querySelector('[data-id="city"]').innerText = event.city;
+              tableRow.querySelector('[data-id="state"]').innerText = event.state;
+              tableRow.querySelector('[data-id="attendance"]').innerText = event.attendance.toLocaleString();
+              tableRow.querySelector('[data-id="date"]').innerText = new Date(event.date).toLocaleDateString();
+          
+              // Object.keys(event).forEach(key => {
+          
+              // })
+          
+              // -- insert the event data into the table
+              eventsTable.appendChild(tableRow);
+            }
+          }
+          
+          const displayStats = (events) => {
+          
+            let total = 0;
+            let max = 0;
+            let min = events[0].attendance;
+            for (let i = 0; i < events.length; i++) {
+              let event = events[i];
+              total += event.attendance;
+          
+              if (event.attendance > max) {
+                max = event.attendance;
+              } else if (event.attendance < min) {
+                min = event.attendance;
+              }
+          
+            }
+          
+            let avg = total / events.length;
+          
+            document.getElementById('total-attendance').innerHTML = total.toLocaleString();
+            document.getElementById('avg-attendance').innerHTML = Math.round(avg).toLocaleString();
+            document.getElementById('max-attended').innerHTML = max.toLocaleString();
+            document.getElementById('min-attended').innerHTML = min.toLocaleString();
+          
+          }
+          
+          const filterEvents = (dropdownItemClicked) => {
+            let cityName = dropdownItemClicked.innerText;
+            document.getElementById('stats-loc').textContent = cityName;
+            let allEvents = getEvents();
+          
+            let filteredEvents = [];
+            if (cityName == 'All') {
+              filterEvents = allEvents
+            }
+            else {
+          
+              filteredEvents = allEvents.filter(event => event.city == cityName);
+          
+            }
+          
+            displayStats(filteredEvents);  //overall stats
+            displayEvents(filteredEvents);  //table
+          
+          }
+          
+          const saveEvent = () => {
+            let eventName = document.getElementById('event-name').value;
+            let city = document.getElementById('city').value;
+            let stateSelect = document.getElementById('state');
+            let selectedIndex = stateSelect.selectedIndex;
+            let selectedOption = stateSelect.options[selectedIndex];
+            let state = selectedOption.text;
+            let attendance = parseInt(document.getElementById('attendance').value);
+          
+            let dateString = document.getElementById('date').value;
+            dateString = `${dateString} 00:00`;
+            let eventDate = new Date(dateString).toLocaleDateString();
+          
+            let newEvent = {
+              event: eventName,
+              city: city,     
+              state: state,
+              attendance: attendance,
+              date: eventDate,
+            };
+          
+            let allEvents = getEvents();
+          
+            allEvents.push(newEvent);
+          
+            localStorage.setItem('ed-events', JSON.stringify(allEvents));
+          
+            document.getElementById('newEventForm').reset();
+          
+            buildDropdown();
+          
+          
+          }
+          
+          
           </code>
         </pre>
 
 
       </div>
       <div class="col-12 col-lg-4">
-        <p>The code is structured in one function</p>
-        <h5>displayMessage</h5>
-        <p>Shows a SweetAlert with the value of the <code>
-          message
-        </code> variable</p>
+        <p>The code is structured in six functions</p>
 
+        <h5>getEvents()</h5>
+        <p> <code>getEvents()</code> is a function that returns all of the storedEvents that the user has.
+          Before returning this array of objects <code>storedEvents</code>, the localStorage is parsed by
+          <code>JSON.parse()</code> and then
+          it is checked to see whether its a empty array in the localStorage or whether their are any key value pairs
+          present. If there are no values in the array <code>storedEvents</code>, the global variable
+          <code>events</code> and its
+          data is stored inside of <code>storedEvents</code>, a key gets set with <code>localStorage.setItem()</code>
+          and the value of this key
+          will be a a string after using <code>JSON.stringify()</code>.
+
+        <h5>buildDropdown()</h5>
+        <p> <code>buildDropdown()</code> is a function that builds the dropwdown with entires that the user can select
+          from. First the events are fetched
+          from calling <code>getEvents()</code> and stored in a variable called <code>currentEvents</code>. Next, the
+          <code>eventCities</code> variable is created by mapping through <code>
+          currentEvents </code> and it pulls only the city name attribute from the objects. After that, the
+          <code>distinctCities</code> variable
+          is created to hold the distinct values from using <code>new Set()</code> on <code>eventCities</code> in order
+          to eliminate duplicates. After all duplicates have been
+          removed, the variable <code>dropdownChoices</code> is created which is a array to hold the values stored in
+          <code>distinctCities</code> using the spread operator <code>...distinctCities</code> .
+
+        <p>
+          After the choices have been for the dropdown, the div that holds the dropdown is cleared by using
+          <code> dropdownDiv.innerHTML = ''</code>.
+          After the div is cleared, the dropdown choices are looped through using the <code>forEach()</code> loop.
+          Inside of the loop, the dropdownItemTemplate
+          is cloned using <code>dropdownItemTemplate.content.cloneNode(true)</code> and stored in the variable
+          <code>dropdownItemCopy</code>. A <code>
+              querySelector </code> is then used on the <code>dropdownItemCopy</code> to find the <code><a></a></code> tag
+          to set its <code>innerText</code>
+          to one of the choices for th dropdown and then the <code>dropdownItemCopy</code> is appended to the
+          <code>dropdownDiv</code>. The span tag in the
+          <code><tr></tr></code> below the dropdown, its text content is set to 'All' becuase with the webpage first
+          loads it will display data for all events and then the
+          two functions are called <code>displayEvents(currentEvents)</code> and
+          <code>displayStats(currentEvents)</code>.
+        </p>
+
+        <h5>displayEvents(events)</h5>
+        <p> <code>buildDropdown()</code> is a function that takes the varible <code>events</code> as a parameter and
+          uses it to build the events table.
+          First the <code>eventsTable</code> and <code>eventTemplate</code> are found with
+          <code>document.getElementById()</code>, the <code>eventsTable</code>
+          gets cleared with <code>evetnsTable.innerHTML = ''</code>. A for loop is used then to loop through the
+          <code>events</code>. Each event will
+          be iterated through, the tableRow in the template will be cloned each iteration and the selective fields on
+          the event objects
+          will be queried in order to change the selective fields data with the data from the events array of objects.
+          After the data is inserted
+          into their respective fields, this tableRow is then appneded to the <code>eventsTable</code> so the data can
+          display.
+        </p>
+
+        <h5>displayStats(events)</h5>
+        <p> <code>displayStats(events)</code> is a function that display the stats for the different events in the table
+          below the dropdown.
+          A for loop is used to loop through all the events, and before the for loop is finished the max, min, and total
+          will be calculated
+          for the attendance of all events. After the for loops is finished, the average will be caluculated. Once these
+          values have be calucualed,
+          each value is sotre in their respective column in the stats table.
+        </p>
+
+        <h5>filterEvents(dropdownItemClicked)</h5>
+        <p> <code>filterEvents(dropdownItemClicked)</code> is a function that will filter the event data for a
+          particular city
+          or alll cities. The city name is fetched from the dropdown selection and all of the events are fetched from
+          calling
+          the <code>getEvents()</code> function. An empty array called <code>filterEvents</code> is created to hold the
+          events based
+          on the <code>if/else</code> statement. If the city name equals all, then all of the events will be pushed to
+          the <code>filteredEvents</code>
+          array. Else, if the city name is not equal to All then the events will be filtered by the city name that is
+          seleected by using <code>.filter()</code> and the
+          the data wil be stored in <code>filteredEvents</code></p>
+
+        <h5>saveEvent()</h5>
+        <p> <code>saveEvent()</code> is a function that will save the event data that is
+          entered on the modal. All of the data inputted on the form, on the modal, by the user is
+          are stored in different variables. These varibles are then using to build a new object called
+          <code>newEvent</code>. <code>getEvents()</code> is called to fetch all of the events and then newEvent is
+          pushed to
+          <code>allEvents</code> whcih hold all the events fetched from <code>getEvents()</code>. The
+          <code>allEvents()</code> varible is then
+          stored in <code>localStorage</code>. The form is then reset to be a blank formm with no data and the
+          <code>buildDropdown()</code> method is called
+          to build the dropdown again.
+        </p>
       </div>
     </div>
 

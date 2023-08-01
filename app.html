@@ -157,13 +157,6 @@
     <li><a href="#" class="dropdown-item" onclick="filterEvents(this)"></a></li>
   </template>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="/js/site.js"> </script>
-
   <template id="table-row-template">
     <tr>
       <td data-id="event"></td>
@@ -183,7 +176,8 @@
         </div>
         <!-- Modal body -->
         <div class="modal-body">
-          <form id="newEventForm" onsubmit="saveEvent()">
+          <!-- onsubmit="saveEvent()" -->
+          <form id="newEventForm">
             <div class="form-group">
               <label for="event-name">Event Name</label>
               <input class="form-control" type="text" name="event-name" placeholder="Event" id="event-name" required>
@@ -264,6 +258,21 @@
       </div>
     </div>
   </div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/site.js"> </script>
+
+  <script>
+    let form = document.getElementById("newEventForm");
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      saveEvent();
+    });
+  </script>
+
 
 
 </body>
